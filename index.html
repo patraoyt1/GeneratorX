@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeneratoX | Gerador de Senhas Moderno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md space-y-6">
+        <div class="text-center">
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">
+                <i class="fa-solid fa-shield-halved text-blue-500 mr-2"></i>GeneratorX
+            </h1>
+            <p class="text-slate-400 text-sm mt-2">Gere senhas ultra-seguras instantaneamente.</p>
+        </div>
+
+        <div class="glass p-6 rounded-2xl shadow-2xl relative group">
+            <div id="password-display" class="text-2xl font-mono text-blue-400 break-all pr-12 min-h-[2rem] flex items-center">
+                Clique em Gerar
+            </div>
+            <button onclick="copyToClipboard()" class="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-700 hover:bg-blue-600 text-white p-3 rounded-xl transition-all active:scale-95" title="Copiar">
+                <i id="copy-icon" class="fa-regular fa-copy"></i>
+            </button>
+        </div>
+
+        <div class="glass p-6 rounded-2xl shadow-xl space-y-6">
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-slate-300 text-sm font-semibold">Comprimento: <span id="length-val" class="text-blue-500">16</span></label>
+                </div>
+                <input type="range" id="length-slider" min="6" max="32" value="16" 
+                    class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <label class="flex items-center space-x-3 text-slate-300 cursor-pointer group">
+                    <input type="checkbox" id="upper" checked class="w-5 h-5 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500">
+                    <span class="text-sm group-hover:text-white transition">Maiúsculas</span>
+                </label>
+                <label class="flex items-center space-x-3 text-slate-300 cursor-pointer group">
+                    <input type="checkbox" id="lower" checked class="w-5 h-5 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500">
+                    <span class="text-sm group-hover:text-white transition">Minúsculas</span>
+                </label>
+                <label class="flex items-center space-x-3 text-slate-300 cursor-pointer group">
+                    <input type="checkbox" id="numbers" checked class="w-5 h-5 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500">
+                    <span class="text-sm group-hover:text-white transition">Números</span>
+                </label>
+                <label class="flex items-center space-x-3 text-slate-300 cursor-pointer group">
+                    <input type="checkbox" id="symbols" checked class="w-5 h-5 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500">
+                    <span class="text-sm group-hover:text-white transition">Símbolos</span>
+                </label>
+            </div>
+
+            <div class="pt-2">
+                <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div id="strength-bar" class="h-full w-0 transition-all duration-500"></div>
+                </div>
+                <p id="strength-text" class="text-[10px] uppercase font-bold mt-2 tracking-wider text-slate-500 text-right">Nível de Segurança</p>
+            </div>
+
+            <button onclick="generatePassword()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98] flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate"></i> GERAR SENHA AGORA
+            </button>
+        </div>
+
+        <p class="text-center text-slate-600 text-[10px] uppercase tracking-widest">Segurança local. Nenhuma senha é salva.</p>
+    </div>
+
+    <script>
+        const charSets = {
+            upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            lower: "abcdefghijklmnopqrstuvwxyz",
+            numbers: "0123456789",
+            symbols: "!@#$%^&*()_+~`|}{[]:;?><,./-="
+        };
+
+        const slider = document.getElementById('length-slider');
+        const lengthVal = document.getElementById('length-val');
+        
+        slider.oninput = () => lengthVal.innerText = slider.value;
+
+        function generatePassword() {
+            let allowedChars = "";
+            if(document.getElementById('upper').checked) allowedChars += charSets.upper;
+            if(document.getElementById('lower').checked) allowedChars += charSets.lower;
+            if(document.getElementById('numbers').checked) allowedChars += charSets.numbers;
+            if(document.getElementById('symbols').checked) allowedChars += charSets.symbols;
+
+            if(allowedChars === "") {
+                alert("Selecione pelo menos uma opção!");
+                return;
+            }
+
+            let password = "";
+            const length = slider.value;
+            
+            // Usando Crypto API para aleatoriedade real
+            const array = new Uint32Array(length);
+            window.crypto.getRandomValues(array);
+
+            for (let i = 0; i < length; i++) {
+                password += allowedChars[array[i] % allowedChars.length];
+            }
+
+            const display = document.getElementById('password-display');
+            display.innerText = password;
+            display.classList.add('text-white');
+            updateStrength(password);
+        }
+
+        function updateStrength(pwd) {
+            const bar = document.getElementById('strength-bar');
+            const text = document.getElementById('strength-text');
+            let score = 0;
+
+            if (pwd.length > 8) score++;
+            if (pwd.length > 14) score++;
+            if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score++;
+            if (/[0-9]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) score++;
+
+            const states = [
+                { w: '25%', c: 'bg-red-500', t: 'Muito Fraca' },
+                { w: '50%', c: 'bg-orange-500', t: 'Fraca' },
+                { w: '75%', c: 'bg-yellow-500', t: 'Boa' },
+                { w: '100%', c: 'bg-green-500', t: 'Inquebrável' }
+            ];
+
+            const state = states[score - 1] || states[0];
+            bar.style.width = state.w;
+            bar.className = `h-full transition-all duration-500 ${state.c}`;
+            text.innerText = state.t;
+            text.className = `text-[10px] uppercase font-bold mt-2 tracking-wider ${state.c.replace('bg-', 'text-')} text-right`;
+        }
+
+        function copyToClipboard() {
+            const pwd = document.getElementById('password-display').innerText;
+            if (pwd === "Clique em Gerar") return;
+
+            navigator.clipboard.writeText(pwd).then(() => {
+                const icon = document.getElementById('copy-icon');
+                icon.className = "fa-solid fa-check text-green-400";
+                setTimeout(() => {
+                    icon.className = "fa-regular fa-copy";
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
