@@ -1,6 +1,6 @@
 const CACHE_NAME = 'generatorx-v1';
 const ASSETS_TO_CACHE = [
-    './MusicX.html',
+    './index.html',
     './manifest.json'
 ];
 
